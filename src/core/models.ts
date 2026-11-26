@@ -4,6 +4,7 @@ export type FileEntry = {
   isDirectory: boolean;
   size: number;
   modified?: number;
+  hasName?: boolean;
 };
 
 export type FileKind = 'Folder' | 'Document' | 'Image' | 'Video' | 'Audio' | 'Archive' | 'Code' | 'Spreadsheet' | 'Other';

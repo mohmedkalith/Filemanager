@@ -27,6 +27,10 @@ jobs:
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
+      - name: Install Expo's public test-only debug key
+        run: |
+          mkdir -p "$HOME/.android"
+          tar -xOzf node_modules/expo/template.tgz package/android/app/debug.keystore > "$HOME/.android/debug.keystore"
       - name: Build standalone test APK
         working-directory: android
         shell: bash

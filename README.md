@@ -9,9 +9,10 @@ FileOS is being rebuilt in **React Native, TypeScript and Expo**. This is an ear
 - Persist favorite paths and recently opened files. Show or hide dot-prefixed names. Dashboard counts, category cards, and direct-file sizes reflect the current folder.
 - Filter the current folder by name, or scan subfolders using a cancellable, case-insensitive filename search capped at 500 matches. It does not index or search file contents.
 - Preview UTF-8 text and code as plain selectable text (up to 1 MiB), and images using the platform decoder. Other files show an honest unsupported-preview message and can be shared to another app.
+- Android can browse a user-selected Storage Access Framework directory read-only, including accessible subfolders. The OS retains the selected grant when permitted; access can be revoked. Text/image previews and importing individual copies are available. The dashboard reports OS-provided internal capacity and free space when available. These new features still require device/provider testing.
 - Mobile bottom navigation and an adaptive wider-screen sidebar. Android native project files are included.
 
-**Important storage restriction:** this version manages only files in FileOS's app-owned directory. Importing makes a copy; it does not edit the original. Android Storage Access Framework directory browsing, MediaStore, persistent content-URI access, SD/USB browsing, and iOS security-scoped folder access are **not implemented**. Uninstalling the app or clearing its data can permanently remove imported files. Backups are disabled in the Android manifest and must be handled separately by the user.
+**Important storage restriction:** file operations modify only FileOS's app-owned directory. The Android selected-folder browser is read-only, and importing makes a copy; it does not edit the original. Android MediaStore and unrestricted device-wide access are not implemented; access to SD/USB or provider locations depends on the Android picker and provider. iOS security-scoped folder access is not implemented. Uninstalling the app or clearing its data can permanently remove imported files. Backups are disabled in the Android manifest and must be handled separately by the user.
 
 ## Setup and development
 
@@ -38,7 +39,7 @@ cd android
 
 A successful build places a standalone APK under `android/app/build/outputs/apk/release/`. **The current release variant is signed using the local Android debug key for testing only.** It is not suitable for publishing; configure a private release signing key, review permissions and perform security/device testing before distribution. Never commit private keys or passwords.
 
-The GitHub Actions workflow, `.github/workflows/android-apk.yml`, runs checks and builds a test APK as an artifact on pushes to this session branch (and supports manual dispatch when enabled on the default branch). It checks the package name, bundled JavaScript, APK signature and SHA-256. It has not been run yet; it is not an existing APK. GitHub-hosted runners may generate a different debug key on each run, so later APKs may not install as updates; uninstalling clears app-owned files. `eas.json` also contains an Expo preview APK profile, but remote build and signing have not been verified.
+The GitHub Actions workflow, `.github/workflows/android-apk.yml`, runs checks and builds a test APK as an artifact on pushes to this session branch (and supports manual dispatch when enabled on the default branch). It checks the package name, bundled JavaScript, APK signature and SHA-256. Earlier builds ran successfully and their artifacts are available on GitHub. New builds use the public test-only debug key from the pinned Expo template; older builds used a different generated key, so switching from an older build may require uninstalling and will clear app-owned files. Later builds must continue using the same key to be installable as updates. `eas.json` also contains an Expo preview APK profile, but remote build and signing have not been verified.
 
 **No APK was generated in the current sandbox:** Java and the Android SDK are absent. Network probes also failed for Google, Tencent's mirror, Gradle services and Maven Central; the GitHub JDK download redirects to a blocked host. The build command was attempted and failed at the missing Java prerequisite. The JavaScript Android bundle was exported successfully; a bundle is not an APK and does not establish native build or runtime correctness.
 
@@ -53,9 +54,10 @@ The GitHub Actions workflow, `.github/workflows/android-apk.yml`, runs checks an
 | TXT/MD/code/CSV and similar UTF-8 text | Plain text preview only; no editor or syntax highlighting |
 | JPEG/PNG/GIF/WebP/BMP | Basic decoder-dependent image preview; no zoom or editing |
 | PDF, Office, spreadsheets, e-books, archives, audio/video | No built-in viewer; sharing to an external app is available |
-| Storage capacity and analytics | Current-folder counts and direct-file sizes only |
+| Storage capacity and analytics | OS-provided internal capacity/free space plus current-folder counts; no recursive analysis |
+| Android selected-folder access | SAF read-only browsing and file import; provider/device testing outstanding |
 | Vault, recycle bin, archive extraction, cloud/network, OCR | Not implemented |
-| Android | Native project generated; APK/build/device tests still required |
+| Android | Previous test APK built; the new SAF implementation still requires device/provider tests |
 | iOS | Source intended to run with Expo; native project and device testing outstanding |
 | Windows/macOS/Linux | Not implemented as native desktop builds |
 
@@ -70,6 +72,6 @@ The GitHub Actions workflow, `.github/workflows/android-apk.yml`, runs checks an
 
 ## Verification and next phases
 
-The TypeScript compiler and six Node tests passed in the development environment. An Android JavaScript/Hermes bundle was exported successfully. No Android APK, emulator/device test, iOS build, permission test, security audit, or release signing verification has been completed.
+The TypeScript compiler and Node tests pass in the development environment. Previous Android test APKs were built, signed with a debug key, and verified via GitHub Actions. The current SAF implementation has not been tested on an Android device or against real providers; no iOS build, permission test, security audit, or production signing verification has been completed.
 
-Next: verify the generated Android project on a real build host and device; implement platform storage providers and safe, recoverable transfers; restore advanced search and explorer features; add a modular viewer registry and tested decoders; then storage analysis, secure vault, accessibility, comprehensive settings, performance work, automated integration tests and release review. Unsupported capabilities must remain explicitly labeled until actually implemented and tested.
+Next: test selected-folder access on actual Android devices/providers; implement additional platform storage providers and safe, recoverable transfers; restore advanced search and explorer features; add a modular viewer registry and tested decoders; then storage analysis, secure vault, accessibility, comprehensive settings, performance work, automated integration tests and release review. Unsupported capabilities must remain explicitly labeled until actually implemented and tested.
