@@ -3,10 +3,11 @@ import { ActivityIndicator, Alert, FlatList, Image, Pressable, ScrollView, Style
 import { Ionicons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import type { FileEntry } from '../core/models';
-import { extension, formatBytes, kindOf } from '../core/models';
+import { extension, formatBytes, kindOf, mediaType } from '../core/models';
 import { FileStore } from '../core/fileStore';
 import { chooseTree, listTree, readTreeText } from '../core/storageTree';
 import { colors, FileRow } from '../components/design';
+import { AudioPlayer, VideoPlayer } from './MediaPlayer';
 
 const TREE_KEY = '@fileos/selected-tree';
 const textTypes = new Set('txt md log csv tsv json xml yaml yml toml ini env config html css scss js ts tsx dart py java kt c cpp h cs php rb rs go sql sh bat srt vtt ass'.split(' '));
@@ -68,8 +69,9 @@ export function StorageBrowser({ store, hidden, onClose, onImported }: { store: 
   const shown = entries.filter(item => item.name.toLowerCase().includes(query.trim().toLowerCase()));
   if (preview) {
     const ext = extension(preview.name);
+    const media = mediaType(preview.name);
     return <View style={s.screen}><View style={s.header}><Pressable onPress={() => setPreview(null)} hitSlop={10}><Ionicons name="arrow-back" size={23} color={colors.ink}/></Pressable><Text style={s.title} numberOfLines={1}>{preview.name}</Text><Pressable onPress={() => importItem(preview)} disabled={busy}><Ionicons name="download-outline" size={22} color={colors.primary}/></Pressable></View><Text style={s.note}>{kindOf(preview)} · {formatBytes(preview.size)} · Original in selected folder</Text>
-      {imageTypes.has(ext) ? <View style={s.imageArea}><Image source={{ uri: preview.uri }} style={{ width: '100%', height: '100%' }} resizeMode="contain" onError={() => setPreviewError('This image could not be decoded on this device.')}/></View> : textTypes.has(ext) ? <ScrollView contentContainerStyle={{ padding: 20 }}>{text === null && !previewError ? <ActivityIndicator color={colors.primary}/> : <Text selectable style={s.text}>{text}</Text>}</ScrollView> : <View style={s.center}><Ionicons name="document-outline" size={46} color={colors.muted}/><Text style={s.emptyTitle}>Preview not available</Text><Text style={s.hint}>Import a copy into FileOS to share it with another app.</Text><Pressable style={s.button} onPress={() => importItem(preview)} disabled={busy}><Text style={s.buttonText}>Import a copy</Text></Pressable></View>}
+      {media === 'video' ? <VideoPlayer uri={preview.uri}/> : media === 'audio' ? <AudioPlayer uri={preview.uri} name={preview.name}/> : imageTypes.has(ext) ? <View style={s.imageArea}><Image source={{ uri: preview.uri }} style={{ width: '100%', height: '100%' }} resizeMode="contain" onError={() => setPreviewError('This image could not be decoded on this device.')}/></View> : textTypes.has(ext) ? <ScrollView contentContainerStyle={{ padding: 20 }}>{text === null && !previewError ? <ActivityIndicator color={colors.primary}/> : <Text selectable style={s.text}>{text}</Text>}</ScrollView> : <View style={s.center}><Ionicons name="document-outline" size={46} color={colors.muted}/><Text style={s.emptyTitle}>Preview not available</Text><Text style={s.hint}>Import a copy into FileOS to share it with another app.</Text><Pressable style={s.button} onPress={() => importItem(preview)} disabled={busy}><Text style={s.buttonText}>Import a copy</Text></Pressable></View>}
       {previewError ? <Text style={s.error}>{previewError}</Text> : null}
     </View>;
   }

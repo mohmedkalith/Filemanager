@@ -10,6 +10,7 @@ FileOS is being rebuilt in **React Native, TypeScript and Expo**. This is an ear
 - Filter the current folder by name, or scan subfolders using a cancellable, case-insensitive filename search capped at 500 matches. It does not index or search file contents.
 - Preview UTF-8 text and code as plain selectable text (up to 1 MiB), and images using the platform decoder. Other files show an honest unsupported-preview message and can be shared to another app.
 - Android can browse a user-selected Storage Access Framework directory read-only, including accessible subfolders. The OS retains the selected grant when permitted; access can be revoked. Text/image previews and importing individual copies are available. The dashboard reports OS-provided internal capacity and free space when available. These new features still require device/provider testing.
+- Basic audio and video playback uses Expo's SDK-compatible native players. Audio offers play/pause, skip and speed; video uses platform controls. Actual playback depends on device codecs. These features have not been tested on a device.
 - Mobile bottom navigation and an adaptive wider-screen sidebar. Android native project files are included.
 
 **Important storage restriction:** file operations modify only FileOS's app-owned directory. The Android selected-folder browser is read-only, and importing makes a copy; it does not edit the original. Android MediaStore and unrestricted device-wide access are not implemented; access to SD/USB or provider locations depends on the Android picker and provider. iOS security-scoped folder access is not implemented. Uninstalling the app or clearing its data can permanently remove imported files. Backups are disabled in the Android manifest and must be handled separately by the user.
@@ -53,7 +54,8 @@ The GitHub Actions workflow, `.github/workflows/android-apk.yml`, runs checks an
 | Favorites, recent files, folder search | Implemented for app-owned paths; no index or external filesystem tracking |
 | TXT/MD/code/CSV and similar UTF-8 text | Plain text preview only; no editor or syntax highlighting |
 | JPEG/PNG/GIF/WebP/BMP | Basic decoder-dependent image preview; no zoom or editing |
-| PDF, Office, spreadsheets, e-books, archives, audio/video | No built-in viewer; sharing to an external app is available |
+| Audio/video | Basic integrated playback for common extensions; codec-dependent and not device-tested |
+| PDF, Office, spreadsheets, e-books, archives | No built-in viewer; sharing to an external app is available |
 | Storage capacity and analytics | OS-provided internal capacity/free space plus current-folder counts; no recursive analysis |
 | Android selected-folder access | SAF read-only browsing and file import; provider/device testing outstanding |
 | Vault, recycle bin, archive extraction, cloud/network, OCR | Not implemented |

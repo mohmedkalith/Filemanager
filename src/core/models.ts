@@ -36,3 +36,11 @@ export function extension(name: string): string {
   const index = name.lastIndexOf('.');
   return index < 0 ? '' : name.slice(index + 1).toLowerCase();
 }
+
+const audioExtensions = new Set(['mp3', 'wav', 'm4a', 'aac', 'flac', 'ogg', 'opus']);
+const videoExtensions = new Set(['mp4', 'm4v', 'mov', '3gp', 'webm', 'mkv', 'avi', 'mpeg', 'mpg', 'wmv', 'flv']);
+/** Classification is an attempt, not a guarantee the platform has a codec. */
+export function mediaType(name: string): 'audio' | 'video' | null {
+  const ext = extension(name);
+  return audioExtensions.has(ext) ? 'audio' : videoExtensions.has(ext) ? 'video' : null;
+}

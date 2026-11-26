@@ -3,21 +3,22 @@ import { ActivityIndicator, Image, Pressable, ScrollView, StyleSheet, Text, View
 import { Ionicons } from '@expo/vector-icons';
 import * as Sharing from 'expo-sharing';
 import type { FileEntry } from '../core/models';
-import { extension, formatBytes, kindOf } from '../core/models';
+import { extension, formatBytes, kindOf, mediaType } from '../core/models';
 import { FileStore } from '../core/fileStore';
 import { colors } from '../components/design';
+import { AudioPlayer, VideoPlayer } from './MediaPlayer';
 
 const textExtensions = new Set('txt md log csv tsv json xml yaml yml toml ini env config html css scss js ts tsx dart py java kt c cpp h cs php rb rs go sql sh bat srt vtt ass'.split(' '));
 const imageExtensions = new Set(['png','jpg','jpeg','gif','webp','bmp']);
 export function Preview({ item, store, close }: { item: FileEntry; store: FileStore; close: () => void }) {
-  const ext = extension(item.name); const isText = textExtensions.has(ext); const isImage = imageExtensions.has(ext);
+  const ext = extension(item.name); const isText = textExtensions.has(ext); const isImage = imageExtensions.has(ext); const media = mediaType(item.name);
   const [text, setText] = useState<string | null>(null); const [error, setError] = useState<string | null>(null);
   useEffect(() => { let active = true; if (isText) store.readText(item).then(value => { if (active) setText(value); }).catch(e => { if (active) setError(String(e.message || e)); }); return () => { active = false; }; }, [item, store, isText]);
   const share = async () => { try { if (await Sharing.isAvailableAsync()) await Sharing.shareAsync(item.uri); else setError('Sharing is unavailable on this device.'); } catch (e) { setError(String(e)); } };
   return <View style={styles.screen}>
     <View style={styles.header}><Pressable onPress={close} hitSlop={12}><Ionicons name="arrow-back" size={23} color={colors.ink}/></Pressable><Text numberOfLines={1} style={styles.title}>{item.name}</Text><Pressable onPress={share} hitSlop={12} accessibilityLabel="Share file"><Ionicons name="share-outline" size={22} color={colors.ink}/></Pressable></View>
     <View style={styles.meta}><Text style={styles.metaText}>{kindOf(item)} · {formatBytes(item.size)}</Text></View>
-    {isImage ? <View style={styles.imageArea}><Image source={{ uri: item.uri }} resizeMode="contain" style={{ width: '100%', height: '100%' }} onError={() => setError('This image could not be decoded on this device.')}/></View> : isText ? <ScrollView contentContainerStyle={{ padding: 20 }}>{text === null && !error ? <ActivityIndicator color={colors.primary}/> : <Text selectable style={styles.text}>{text}</Text>}</ScrollView> : <View style={styles.empty}><Ionicons name="document-outline" size={48} color={colors.muted}/><Text style={styles.emptyTitle}>Preview not available</Text><Text style={styles.emptyText}>This format does not have a built-in viewer yet. You can share the file with another app.</Text><Pressable style={styles.shareButton} onPress={share}><Text style={{ color: '#fff', fontWeight: '700' }}>Share file</Text></Pressable></View>}
+    {media === 'video' ? <VideoPlayer uri={item.uri}/> : media === 'audio' ? <AudioPlayer uri={item.uri} name={item.name}/> : isImage ? <View style={styles.imageArea}><Image source={{ uri: item.uri }} resizeMode="contain" style={{ width: '100%', height: '100%' }} onError={() => setError('This image could not be decoded on this device.')}/></View> : isText ? <ScrollView contentContainerStyle={{ padding: 20 }}>{text === null && !error ? <ActivityIndicator color={colors.primary}/> : <Text selectable style={styles.text}>{text}</Text>}</ScrollView> : <View style={styles.empty}><Ionicons name="document-outline" size={48} color={colors.muted}/><Text style={styles.emptyTitle}>Preview not available</Text><Text style={styles.emptyText}>This format does not have a built-in viewer yet. You can share the file with another app.</Text><Pressable style={styles.shareButton} onPress={share}><Text style={{ color: '#fff', fontWeight: '700' }}>Share file</Text></Pressable></View>}
     {error ? <View style={styles.error}><Text style={{ color: '#991B1B' }}>{error}</Text></View> : null}
   </View>;
 }

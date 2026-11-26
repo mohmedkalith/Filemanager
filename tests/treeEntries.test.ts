@@ -14,3 +14,10 @@ test('keeps content URIs opaque and sorts provider entries while honoring hidden
   assert.equal(visible[1].uri, entries[0].uri);
   assert.equal(prepareTreeEntries(entries, true).length, 3);
 });
+
+test('classifies common media extensions without claiming playback support', async () => {
+  const { mediaType } = await import('../src/core/models');
+  assert.equal(mediaType('music.MP3'), 'audio');
+  assert.equal(mediaType('clip.mp4'), 'video');
+  assert.equal(mediaType('document.pdf'), null);
+});
