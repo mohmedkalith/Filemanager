@@ -1,0 +1,16 @@
+node_modules/
+.expo/
+dist/
+coverage/
+*.log
+android/.gradle/
+android/local.properties
+android/app/build/
+android/build/
+*.keystore
+*.jks
+.env*
+.DS_Store
+
+# Local handoff archive
+/FileOS-source.zip

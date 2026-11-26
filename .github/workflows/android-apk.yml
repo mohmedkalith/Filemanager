@@ -1,0 +1,54 @@
+name: Build Android test APK
+on:
+  workflow_dispatch:
+  # Dispatch requires the workflow to exist on the default branch. A push to
+  # this session branch can also start the build without changing main.
+  push:
+    branches:
+      - arena/d73be959-filemanager
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - name: Build standalone test APK
+        working-directory: android
+        run: ./gradlew assembleRelease --no-daemon --max-workers=2
+      - name: Verify package, signature and checksum
+        shell: bash
+        run: |
+          set -euo pipefail
+          apk=android/app/build/outputs/apk/release/app-release.apk
+          test -s "$apk"
+          tools="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)"
+          "$tools/aapt" dump badging "$apk" > apk-badging.txt
+          grep -F "package: name='com.fileos.workspace'" apk-badging.txt
+          "$tools/apksigner" verify --verbose --print-certs "$apk"
+          unzip -l "$apk" > apk-contents.txt
+          grep -F 'assets/index.android.bundle' apk-contents.txt
+          sha256sum "$apk" > app-release.apk.sha256
+          cat app-release.apk.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fileos-test-apk
+          path: |
+            android/app/build/outputs/apk/release/app-release.apk
+            app-release.apk.sha256
+            apk-badging.txt
+          if-no-files-found: error

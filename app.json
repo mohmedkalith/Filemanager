@@ -1,0 +1,28 @@
+{
+  "expo": {
+    "name": "FileOS",
+    "slug": "fileos",
+    "version": "0.1.0",
+    "orientation": "default",
+    "android": {
+      "package": "com.fileos.workspace",
+      "permissions": [],
+      "blockedPermissions": [
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.SYSTEM_ALERT_WINDOW"
+      ],
+      "allowBackup": false
+    },
+    "ios": {
+      "bundleIdentifier": "com.fileos.workspace",
+      "supportsTablet": true
+    },
+    "plugins": [
+      "expo-document-picker"
+    ],
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}
